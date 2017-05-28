@@ -1,0 +1,141 @@
+<html>
+  <head>
+    <script>
+
+function PriorityQueue () {
+  this._nodes = [];
+
+  this.enqueue = function (priority, key) {
+    this._nodes.push({key: key, priority: priority });
+    this.sort();
+  };
+  this.dequeue = function () {
+    return this._nodes.shift().key;
+  };
+  this.sort = function () {
+    this._nodes.sort(function (a, b) {
+      return a.priority - b.priority;
+    });
+  };
+  this.isEmpty = function () {
+    return !this._nodes.length;
+  };
+}
+
+/**
+ * Pathfinding starts here
+ */
+function Graph(){
+  var INFINITY = 1/0;
+  this.vertices = {};
+// function for adding the edge between two vertex
+  this.addVertex = function(name, edges){
+    this.vertices[name] = edges;
+  };
+//function for printing edge
+  this.getEdge = function(name){
+  return this.vertices[name];
+  };
+
+//function for finding the shortestpath
+  this.shortestPath = function (start, finish) {
+    var nodes = new PriorityQueue(),
+        distances = {},
+        previous = {},
+        path = [],
+        smallest, vertex, neighbor, alt;
+
+    for(vertex in this.vertices) {
+      if(vertex === start) {
+        distances[vertex] = 0;
+        nodes.enqueue(0, vertex);
+      }
+      else {
+        distances[vertex] = INFINITY;
+        nodes.enqueue(INFINITY, vertex);
+      }
+      previous[vertex] = null;
+    }
+
+    while(!nodes.isEmpty()) {
+      smallest = nodes.dequeue();
+
+      if(smallest === finish) {
+        path = [];
+
+        while(previous[smallest]) {
+          path.push(smallest);
+          smallest = previous[smallest];
+        }
+
+        break;
+      }
+
+      if(!smallest || distances[smallest] === INFINITY){
+        continue;
+      }
+
+      for(neighbor in this.vertices[smallest]) {
+        alt = distances[smallest] + this.vertices[smallest][neighbor];
+
+        if(alt < distances[neighbor]) {
+          distances[neighbor] = alt;
+          previous[neighbor] = smallest;
+          nodes.enqueue(alt, neighbor);
+        }
+      }
+    }
+
+    return path;
+  };
+}
+//to building the object for the edges
+Object.prototype.push = function( key, value ){
+   this[ key ] = value;
+   return this;
+};
+
+var g = new Graph();
+
+//Enter Various values for the latitude, longitude, conTravel , origin, destination
+var latitude = [0,0,70];
+var longitude = [90,0,45];
+var canTravel = ["2","0 2","0 1"];
+var origin = '0';
+var destination = '1';
+
+var dis = 0;
+for(var i=0;i<canTravel.length;i++)
+{
+  var city=  canTravel[i].split(" ");
+  var edgeObj = {};
+  for(var j=0;j<city.length;j++)
+  {
+    var k = parseInt(city[j]);
+    dis = 4000 * Math.acos(Math.sin(latitude[i]) * Math.sin(latitude[k]) + Math.cos(latitude[i]) * Math.cos(latitude[k]) * Math.cos(longitude[i] - longitude[k]));
+    edgeObj.push( city[j], dis );
+  }
+  var index = i.toString();
+  g.addVertex(index, edgeObj);
+}
+var shortPath = g.shortestPath(origin, destination).concat(origin).reverse();
+console.log(shortPath);
+var shortestPathLength = 0;
+
+for(var l=0;l<shortPath.length-1;l++)
+{
+  var y =parseInt(shortPath[l+1]);
+  shortestPathLength = shortestPathLength +g.getEdge(shortPath[l],shortPath[l+1])[y];
+
+}
+
+document.writeln("Shortest Path Route : ");
+document.writeln(shortPath.join("-"));
+document.writeln("<br />")
+document.writeln('Shortest Path Route Length :' + shortestPathLength);
+console.log('Shortest Path Route Length : ' + shortestPathLength) ;
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
